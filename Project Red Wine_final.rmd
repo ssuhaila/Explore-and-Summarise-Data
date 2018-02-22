@@ -1,0 +1,781 @@
+EDA: Project Red Wine 
+======================
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, packages}
+
+# Load all of the packages that you end up using in your analysis in this code
+# chunk.
+
+# Notice that the parameter "echo" was set to FALSE for this code chunk. This
+# prevents the code from displaying in the knitted HTML output. You should set
+# echo=FALSE for all code chunks in your file, unless it makes sense for your
+# report to show the code that generated a particular plot.
+
+# The other parameters for "message" and "warning" should also be set to FALSE
+# for other code chunks once you have verified that each plot comes out as you
+# want it to. This will clean up the flow of your report.
+
+library(ggplot2)
+library(gridExtra)
+library(GGally)
+```
+
+# Introduction to this dataset
+
+This dataset was created by  P. Cortez, A. Cerdeira, F. Almeida, T. Matos and J. Reis. [(Source)](ttps://s3.amazonaws.com/udacity-hosted-downloads/ud651/wineQualityInfo.txt) to study the components and the resulting quality of the red wine. This dataset is using the red wine samples from Vinho Verde. Three wine experts graded the wine quality and their score range from 0 (the worst) to 10 (the best). Since this dataset is dealing with red wine quality, we will then explore them by relating the factors that contributes to the quality of wine. 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, results="hide", Load_the_Data,}
+# Load the Data
+getwd()
+rw<-read.csv('wineQualityReds.csv')
+
+```
+
+# Data Overview
+First, we will be looking at the structure of this dataset
+```{r}
+str(rw)
+```
+
+From the above result, we noticed that variable x is an index  to this dataset. It is not needed for this analysis. So we will remove it. 
+
+```{r}
+rw$X <- NULL
+str(rw)
+```
+
+
+Once we removed variable X, we can see that this dataset contains 1599 observations with 12 variables. The explanations on the variables can be found below:-
+
+   Input variables (based on physicochemical tests):
+   1 - fixed acidity (tartaric acid - g / dm^3)
+   2 - volatile acidity (acetic acid - g / dm^3)
+   3 - citric acid (g / dm^3)
+   4 - residual sugar (g / dm^3)
+   5 - chlorides (sodium chloride - g / dm^3
+   6 - free sulfur dioxide (mg / dm^3)
+   7 - total sulfur dioxide (mg / dm^3)
+   8 - density (g / cm^3)
+   9 - pH
+   10 - sulphates (potassium sulphate - g / dm3)
+   11 - alcohol (% by volume)
+
+   Output variable (based on sensory data): 
+   12 - quality (score between 0 and 10)
+
+[(Source)](https://s3.amazonaws.com/udacity-hosted-downloads/ud651/wineQualityInfo.txt)
+
+# Univariate Plots Section
+
+The first step is to compare all the histogram variables in this dataset. This is just to get a general outlook on the type of distribution we're dealing with. We will start with Fixed Acidity variable.   
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#function to create histogram 
+
+plot.hist <- function(x.var, df){
+  ggplot(df, aes_string(x = x.var)) +
+    geom_histogram()
+}
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#histogram for Fixed Acid
+
+u1<-plot.hist('fixed.acidity', rw) + xlab('Fixed Acid (g/dm^3)')+
+  labs(title='Histogram for Fixed Acid Content')
+u1
+```
+
+```{r}
+summary(rw$fixed.acid) 
+```
+
+There are two peaks in this histogram, and both of them lies in between 7 to 8g/dm^3). Some outliers were detected at 15-16g/dm^3.
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#Histogram for Volatile Acid
+
+u2<-plot.hist('volatile.acidity', rw) + xlab('Volatile Acidity (g/dm^3)')+
+  labs(title='Histogram for Volatile Acidity Content')
+u2
+```
+
+
+```{r}
+summary(rw$volatile.acid) 
+```
+
+Just like the Fixed Acid histogram we can see that Volatile Acid also has two peaks in its histogram (around 0.4g/dm^3 and 0.5g/dm^3). The mode for Volatile Acid however, occurs at 0.5 g/dm^3. There's an outlier detected at 1.58g/dm^3)
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#Histogram for Citric Acid
+
+u3<-plot.hist('citric.acid', rw) + xlab('Citric Acid (g/dm^3)')+
+  labs(title='Histogram for Citric Acid Content')
+u3
+```
+```{r}
+summary(rw$citric.acid)
+```
+
+Citric Acid is skewed to the right. There's an outlier detected at 1g/dm^3. What's interesting about this histogram is the high occurrence of zero values in this variable. We will further analyse this Citric Acid scenario. 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#Histogram for Residual Sugar
+
+u4<-plot.hist('residual.sugar', rw) + xlab('Residual Sugar (g/dm^3)')+
+  labs(title='Histogram for Residual Sugar Content')
+u4
+
+```
+
+```{r}
+summary(rw$residual.sugar)
+```
+
+Residual Sugar has a tall peak occured at 3g/dm^3 in its histogram. There's also a few outliers beyond 10g/dm^3, however, it does not seem to affect the means in major way (Mean is at 2.2g/dm^3).
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#Histogram for Chlorides
+
+u5<-plot.hist('chlorides', rw) + xlab('Chlorides (g/dm^3)')+
+  labs(title='Histogram for Chlorides Content')
+u5
+```
+
+```{r}
+summary(rw$chlorides)
+```
+
+Chlorides histogram is almost similar to the Residual Sugar histogram above as it was skewed to the right with some outliers that go beyond 0.3g/dm^3. And just like Residual Sugar, these outliers do not have big influence to the mean score (Mean score for Chlorides variable is 0.08747g/dm^3).
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#Histogram for Free Sulfur
+
+u6<-plot.hist('free.sulfur.dioxide', rw) + xlab('Free Sulfur Dioxide (mg/dm^3)')+
+  labs(title='Histogram for Free Sulfur Dioxide Content')
+u6
+
+```
+
+```{r}
+summary(rw$free.sulfur.dioxide)
+```
+
+We see another histogram that skewed to the right. Outliers were detected that go beyond 60mg/dm^3. From the Summary function, we can see that the maximum value of Free Sulfur Dioxide was detected at 72mg/dm^3.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#Histogram for Total Sulfur
+
+u7<-plot.hist('total.sulfur.dioxide', rw) + 
+  xlab('Total Sulfur Dioxide (mg/dm^3)')+
+  labs(title='Histogram for Total Sulfur Dioxide Content')
+u7
+```
+
+```{r}
+summary(rw$total.sulfur.dioxide)
+```
+
+The histogram for Total Sulfur Dioxide is similar to the Free Sulfur Dioxide. Perhaps the similarity is due to the fact Free Sulfur contributes majorly to the Total Sulfur content. However, there are some worrying outlier in this histogram. You can see we have a few datapoints that go above 160mg/dm^3. 
+
+```{r}
+sum(rw$total.sulfur.dioxide>160)
+```
+
+According to this [(website)](http://www.scientistlive.com/content/total-sulphite-wine), the permitted level of SO2 (Sulfur Dioxide) in Red Wine is 160mg/l (160mg/dm^3) in the EU (European Union). There are three datapoints that go above that level in this dataset. We do not know if this is simply a human error, or if the datapoint is actually legit. However, we will be keeping these datapoints in the analysis since we are looking at the factors that contributes the quality of the wine. 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#Histogram for Density
+
+u8<-plot.hist('density', rw) + xlab('Density (g/cm^3)')+
+  labs(title='Histogram for Density')
+u8
+```
+
+```{r}
+summary(rw$density)
+```
+
+The distribution for Density follows a normal distribution shape.The mean for Density in this red wine is 0.9967g/cm^3, which is really close to the median score of 0.9968g/cm^3.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#Histogram for pH
+
+u9<-plot.hist('pH', rw) + xlab('pH')+
+  labs(title='Histogram for pH')
+u9
+```
+
+```{r}
+summary(rw$pH)
+```
+
+Just like Density, the pH histogram also follows the normal distribution shape.The median and the mean for this distribution is really close to each other, a pH of 3.310 as a median and 3.311 as the mean pH. 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#Histogram for Sulphates
+
+u10<-plot.hist('sulphates', rw) + 
+  xlab('Sulphates (potassium sulphate - g / dm^3)')+
+  labs(title='Histogram for Sulphates Content')
+u10
+```
+
+```{r}
+summary(rw$sulphates)
+```
+
+Here, we find another histogram that skewed to the right. Some outliers were detected above 1.5g/dm^3. 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#Histogram for Alcohol
+
+u11<-plot.hist('alcohol', rw) + xlab('Alcohol (% by Volume)')+
+  labs(title='Histogram for Alcohol Content')
+u11
+
+```
+
+```{r}
+summary(rw$alcohol)
+```
+
+Like most of the histograms in this dataset, Alcohol volume histogram is also skewed to the right. We can also detected an outlier that occur at 14.9%. 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#Histogram for Quality
+
+#first, convert the quality to factor 
+rw$quality.factor <- factor(rw$quality,
+                           labels = c("3", "4", "5", "6", "7", "8"))
+
+u12<-ggplot(rw, aes(x=as.factor(quality))) + geom_bar()+
+  xlab('Quality Grade')+labs(title='Histogram for Quality Grade')
+u12
+
+```
+
+```{r}
+summary(rw$quality)
+
+summary(rw$quality.factor)
+```
+
+The Quality histogram follows a normal distribution. Most the wine in this datasets falls in Grade 5 Quality. 
+
+Overall, it seems Density, pH and Quality has normal distribution.There are some outliers found in Chlorides, Total Sulphates, Residual Sugar, Free Sulfur dioxide and Total Sulfur Dioxide. Interesting to also note that Citric Acid has a few data with zero value. 
+
+Seven of the these histograms are skew to the right. We will then transform these using log10 so that their distribution will be normalised, thus, make it easier to apply the statistical formula for future analysis. 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+plot.histlog <- function(x.var, df){
+  ggplot(df, aes_string(x = x.var)) +
+    geom_histogram()+
+    scale_x_log10(breaks = scales::trans_breaks("log10", function(x) 10^x),
+                   labels = scales::trans_format("log10",
+                                                 scales::math_format(10^.x)))+
+    annotation_logticks(base = 10, sides = "bl", scaled = TRUE)
+}
+```
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#plot the log10 transformation: Citric Acid
+
+u13<-plot.histlog('citric.acid', rw) + xlab('Citric Acid (g / dm^3) in Log10')+
+  labs(title='Histogram for Citric Acid in Log10')
+
+grid.arrange(u3 ,u13)
+```
+
+I expected the histogram for Citric Acid in Log10 to at least looks like a normal distribution. However, it ends up skewed to the left (from the original that skewed to the right). Perhaps if we removed some of the outliers, we could have an acceptable normal distribution. 
+
+However, I won't be removing the outliers because I am interested to further my investigation in the Citric Acid dataset, especially the datapoints that contain zero citric acid value. 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#plot the log10 transformation: Residual Sugar
+
+u14<-plot.histlog('residual.sugar', rw) + 
+  xlab('Residual Sugar (g / dm^3) in Log10')+
+  labs(title='Histogram for Residual Sugar in Log10')
+
+grid.arrange(u4 ,u14)
+```
+
+The Residual Sugar in Log10 looks somewhat, 'normal-ish' in its distribution. I will accept that we have successfully transformed it into normal distribution. 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+#plot the log10 transformation: Chlorides
+
+u15<- plot.histlog('chlorides', rw) + 
+  xlab('Chlorides (sodium chloride - g / dm^3) in Log10')+
+  labs(title='Histogram for Chlorides in Log10')
+
+grid.arrange(u5 ,u15)
+
+```
+
+We also managed to transform Chlorides into normal distribution using Log10. 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#plot the log10 transformation: Free Sulfur Dioxide
+
+u16<- plot.histlog('free.sulfur.dioxide', rw) + 
+  xlab('Free Sulfur Dioxide (mg / dm^3) in Log10')+
+  labs(title='Histogram for Free Sulfur Dioxide in Log10')
+
+grid.arrange(u6,u16)
+
+```
+
+This is not what I expected to happen. If it's not for those valleys between 10^8 to 10^10 in the x-axis, we could have an acceptable normal distribution shape.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+#plot the log10 transformation:Total Sulfur Dioxide
+
+u17<- plot.histlog(' total.sulfur.dioxide', rw) + 
+  xlab('Total Sulfur Dioxide (mg / dm^3) in Log10')+
+  labs(title='Histogram for Total Sulfur Dioxide in Log10')
+
+grid.arrange(u7 ,u17)
+
+```
+
+Total Sufur Dioxide was successfully transformed to a normal distribution using Log 10. 
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+#plot the log10 transformation: Sulphates
+
+u18<- plot.histlog(' sulphates', rw) + 
+  xlab('Sulphates (potassium sulphate - g / dm3) in Log10')+
+  labs(title='Histogram for Sulphates in Log10')
+
+grid.arrange(u10 ,u18)
+```
+
+Sulphates is another variable that we have successfully transfored using Log10. 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+#plot the log10 transformation: Alcohol
+
+u19<- plot.histlog('alcohol', rw) + 
+  xlab('Alcohol in (% by volume) in Log10')+
+  labs(title='Histogram for Alcohol in Log10')
+
+grid.arrange(u11 ,u19)
+
+```
+There's not much changes in Alcohol distribution shape after we have transformed them using Log10. 
+
+As a result, Residual Sugar, Chlorides,Total Sulfur Dioxide and Sulphates have shown a normal distribution after the Log10 transformation. 
+
+### Citric Acid Issue:-
+
+From the histogram above, it seems Citric Acid has a lot of zero values in it.In fact, the mode for Citric Acid is 0. We will be comparing the Citric Acid Histogram and Citric Acid Boxplot in the graph below:-
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+#compare citric acid histogram with citric acid boxplot
+
+u20 <- ggplot(rw, aes(y = citric.acid, x = 1)) +
+  geom_boxplot(color = 'blue') +
+  geom_jitter(aes(x = 1, y = citric.acid), alpha = 0.3) +
+  labs(y = 'Citric Acid (g / dm^3))', x = '',
+          title = "Citric Acid Distribution") +
+  coord_flip()
+
+#u3 is the citric acid histogram
+grid.arrange(u3, u20)
+```
+
+From the visuals above, we can see that this Red Wine dataset contains wine with no citric acid. I want to know if these zero value will bring problem in later analysis. However, I'm assuming that the the zero citric acid value is balanced by other type of acids in the wine, namely, the fixed and volatile acids. 
+
+First, I'm going to check the data that contains Zero Citric Acid:
+
+```{r}
+length(subset(rw, citric.acid == 0)$citric.acid)
+```
+
+There are 132 data with no citric acid in them. Then, we extract those data into another dataset called zero.citric
+
+```{r}
+zero.citric<- subset(rw, rw$citric.acid==0)
+
+```
+
+Finally, we will do a comparison with other type of acids: The  Fixed and Volatile:
+
+```{r}
+data_zero.citric <- list(zero.citric$fixed.acidity,zero.citric$volatile.acidity) 
+lapply(data_zero.citric,summary)
+```
+
+The results from the summary has shown even though the value of citric.acid is zero, the other type of acid such as fixed and volatile do exist in the wine content since their minimum value is above zero.
+
+# Univariate Analysis
+
+### What is the structure of your dataset?
+From the str(rw) function result, we can see that this Dataset contains 1599 observations with 12 variables (after we remove the index variable X) 
+
+### What is/are the main feature(s) of interest in your dataset?
+Since this dataset comes from a study on Red Wine Quality, then, Quality will be the main target in this exploration. However, I'm also interested in the lack of citric acid in some of the samples and whether it's going to play a major influence in the quality of the red wine. 
+
+### What other features in the dataset do you think will help support your \your investigation into your feature(s) of interest?
+I will also investigate the other type of acids (fixed and volatile) and whether it will play a role in determine the quality. 
+
+### Did you create any new variables from existing variables in the dataset?
+I created a new dataset called Zero.Citric that extract the data with zero citric acid value. We may do further analysis on this particular dataset. 
+
+### Of the features you investigated, were there any unusual distributions? \ Did you perform any operations on the data to tidy, adjust, or change the form of the data? If so, why did you do this?
+I transformed seven histogram into log10. And amongst these- Residual Sugar, Chlorides,Total Sulfur Dioxide and Sulphates shown a normal distribution after transformation. We can proceed to use the Normal Distribution analysis for these variables (if needed in the future)
+
+
+# Bivariate Plots Section
+
+Firstly, I  want to see if there's any relation between Acid and pH. To do this, we will create a new variable called total.acid
+
+```{r}
+rw$total.acid<-rw$fixed.acidity + rw$volatile.acidity + rw$citric.acid
+summary(rw$total.acid)
+```
+
+Then we plot the new variable (total.acid) against pH
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#plotting Total Acid vs PH
+
+ggplot(aes(x = pH, y=total.acid), data = rw)+
+  geom_point(alpha=0.25)+labs(title='Acid vs pH')+
+  geom_smooth()+
+  xlab('pH') + ylab('Total Acid (mg/dm^3)')
+
+```
+
+It looks like there is a correlation between Acid and pH based on the blue line. And to confirm further, we will be running a correlation test. 
+
+```{r}
+cor(rw$total.acid, rw$pH)
+```
+
+The result shows a pretty strong correlation between Acid and pH. 
+
+Once we are satisfied with this result, the next step is to finally looking into the role citric acid plays in making a good quality red wine.
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#plotting Citric Acid vs Quality
+
+ggplot(aes(x = quality.factor, y=citric.acid), data = rw)+
+  geom_boxplot(color='green')+labs(title='Citric.Acid vs Quality')+
+  geom_smooth()+
+  xlab('Quality Grade') + ylab('Citric.Acid (mg/dm^3)')+
+  labs(title='Citric Acid vs Quality Grade: Full Dataset')
+
+```
+
+We can see from the boxplot above that the highest citric acid mean is situated under Grade 8 Quality (at around 0.4mg/dm^3). While the lowest quality, Grade 3, has the lowest Citric Acid mean (at around 0.05mg/dm^3). 
+
+Let's run the summary function Quality in Zero.Citric dataset. 
+
+```{r}
+#check the quality value in the data with zero citric acid
+summary(zero.citric$quality)
+```
+
+As shown in both the boxplot and summary, it seems zero citric is missing in all type of quality grade except in the highest grade (Grade 8). Does this mean you need at least some amount of citric acid to make a good quality wine?
+
+We will do a correlation test for this question:
+
+```{r}
+cor(rw$citric.acid, rw$quality)
+```
+
+There seems to be some correlation there. It's not strong, but it seems to influence your wine quality to some degree. 
+
+We will then proceed to plot other type of acid against quality. We're going to start with Volatile Acid.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#plot volatile against quality
+
+ggplot(aes(x = quality.factor, y=volatile.acidity), data = rw)+
+  geom_boxplot(color='blue')+
+  labs(title='Volatile Acid vs Quality Grade: Full Dataset')+
+  xlab('Quality Grade') + ylab('Volatile.Acidity (mg/dm^3)') 
+```
+
+The highest wine grade contains a low volume of volatile acide. We will be running a correlation test to confirm this plot. 
+```{r}
+cor(rw$volatile.acid, rw$quality)
+```
+
+At -0.39, the volatile acid does have a stronger influence to the red wine quality compared to citrict acid. We will then plot fixed acid against quality. 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#plot fixed acidity against quality
+
+ggplot(aes(x = quality.factor, y=fixed.acidity), data = rw)+
+  geom_boxplot(color='orange')+
+  labs(title='Fixed Acidity vs Quality Grade: Full Dataset')+
+  xlab('Quality') + ylab('FixedAcidity (mg/dm^3)') 
+```
+
+There seems to be not much correlation from what we've seen. The plot is scattered all over the place. So we will confirm this with correlation test. 
+
+```{r}
+cor(rw$fixed.acid, rw$quality)
+```
+
+The correlation is pretty miniscule. 
+
+So what are other variables that can influence quality? To get an overview of this, I'll be running a ggcor function
+
+```{r warning=FALSE}
+ggcorr(rw)
+```
+
+Since I'm interested in identifying the factor that made a good quality wine, I'm just going to zoom into Quality column. Amongst the variables, the highest correlation to be found is between Alcohol volume and Quality, so we will be plotting these two variables. 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#plot the Alcolhol vs Quality to boxplot
+ggplot(rw, aes(x = quality.factor, y = alcohol)) +
+  geom_boxplot(color='red')+xlab('Quality Grade')+ylab('Alcohol (% by Volume)')
+
+```
+
+```{r}
+#calculate the Alcolhol Volume mean for Grade 8
+Grade8<-subset(rw, rw$quality==8)
+mean(Grade8$alcohol)
+
+```
+
+The highest mean in Alcohol Volume was found in the highest quality grade (Grade 8) at 12.09%.
+
+I wonder if we will see the same composition in the dataset with zero citric acid. 
+
+
+```{r, warning=FALSE}
+ggcorr(zero.citric)
+
+```
+
+It is interesting to note that the correlation score between alcohol and quality was actually decreaed to around 0.4 in Zero Citric Acid dataset compared to 0.6 in the full dataset. I'm going to do a quick comparison on the Alcohol Volume vs Quality between the full dataset and the Zero Citric dataset
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#plotting citric acid and Alcohol using the full dataset
+
+u21<-ggplot(aes(x = quality.factor, y=alcohol), data = rw)+
+  geom_boxplot(color='pink')+labs(title='Alcohol vs Quality in Full Dataset')+
+  xlab('Quality Grade') + ylab('Alcohol (% by Volume)') 
+
+#creating factor quality in zero.citric dataset: There are no label 8
+
+zero.citric$quality.factor <- factor(zero.citric$quality,
+                           labels = c("3", "4", "5", "6", "7"))
+
+u22<-ggplot(aes(x = quality.factor, y=alcohol), data = zero.citric)+
+  geom_boxplot(color='purple')+
+  labs(title='Alcohol vs Quality in Zero Citric Dataset')+
+  xlab('Quality Grade') + ylab('Alcohol (% by Volume)') 
+
+grid.arrange(u21,u22)
+
+```
+
+There seems to be a big jump in mean between Grade 6 and Grade 7 in Zero Citric Dataset. 
+
+```{r}
+Grade7rw<-subset(rw, rw$quality==7)
+mean(Grade7rw$alcohol)
+```
+```{r}
+Grade7zc<-subset(zero.citric, zero.citric$quality==7)
+mean(Grade7zc$alcohol)
+```
+
+The calculation above shows a higher Alcohol percentage mean in wine with no Citric Acid (mean=12.53%) compared to the wine in full dataset (mean=11.47%) under Grade 7 datapoints, aka, the highest quality found in Zero Citric dataset, (since Zero Citric dataset did not contain Grade 8 Quality). 
+
+However, it's still does not explain the lower correlation between Alcohol and Quality in Zero Citric Dataset. But there might be a possibility that the decrease in correlation score between Alcohol and Quality is due to the chunk of missing data from Grade 8 quality (132 observations). 
+
+Is there a strong relation between alcohol and citric acid? Perhaps you need to add more alcohol content into your wine to compensate the lack of citric acid? With this in mind, I'm going to plot Citric Acid vs Alcohol Volume using the full dataset. 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#plotting citric acid and Alcohol using the full dataset
+
+ggplot(aes(x = alcohol, y=citric.acid), data = rw)+
+  geom_point()+labs(title='Citric Acid vs Alcohol in Full Dataset')+
+  geom_smooth()+
+  xlab('Alcohol Volume') + ylab('Citric Acid') 
+
+```
+
+```{r}
+cor(rw$alcohol, rw$citric.acid)
+```
+
+Not much of a correlation there . And it's confirmed by the correlation score. Perhaps it comes from another type of acid?
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#plotting total acid and Alcohol using the full dataset
+
+ggplot(aes(x = alcohol, y=total.acid), data = rw)+
+  geom_point()+labs(title='Total Acid vs Alcohol in Full Dataset')+
+  geom_smooth()+
+  xlab('Alcohol Volume') + ylab('Total Acid') 
+
+```
+
+```{r}
+cor(rw$alcohol, rw$total.acid)
+```
+
+No correlation to be found between Total Acid and Alcohol Volume too. It looks like some other variables were influencing the drop in correlation score between Alcohol and Quality in the Zero Citric Acid dataset. 
+
+# Bivariate Analysis
+
+### Talk about some of the relationships you observed in this part of the \ investigation. How did the feature(s) of interest vary with other features in \ the dataset?
+Alcohol is definitely one of the major factor in influencing wine quality. The highest mean in Alcohol Volume was found in the highest quality grade (Grade 8) at 12.09%.
+
+### Did you observe any interesting relationships between the other features \ (not the main feature(s) of interest)?
+Even though alcohol is the major factor, it is interesting to note its correlation with Quality was actually decreased in the Zero Citric Acid dataset. However, Citric Acid and Alcohol do not have a strong relation. So perhaps some other factors were influencing this result. 
+
+### What was the strongest relationship you found?
+The strongest relationship is between Acid and pH with the correlation score of 0.68.
+
+# Multivariate Plots Section
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#Combining all three type of acids in Full Dataset
+
+ggplot(aes(x = fixed.acidity, y=volatile.acidity), data = rw)+
+  geom_point(aes(color=citric.acid))+
+  #scale_color_brewer(type='seq', palette = 9)+ 
+  #facet_wrap(~quality, labeller = "label_both")+
+  guides(color = guide_legend(title = "Citric Acid (g / dm^3)"))+
+  labs(x='Fixed Acidity (tartaric acid - g / dm^3)',
+       y=' Volatile Acidity (acetic acid - g / dm^3)',
+       title='All Acid Types vs Quality Grade: Full Dataset')
+```
+
+
+A high number of low citric acid is situated when fixed.acidity is less than 10(g/dm^3). The higher the value for fixed.acidity, the higher the value for citric acid. 
+
+We will then map these two type of acids against Quality where the citric acid do not exist. 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(aes(x = fixed.acidity, y=volatile.acidity), data = zero.citric)+
+   geom_point(aes(color=factor(quality)))+
+   scale_color_brewer(type='seq', palette = 8)+ 
+   guides(color = guide_legend(title = 'Quality Grade'))+
+   labs(x='Fixed Acidity (tartaric acid - g / dm^3)',
+        y=' Volatile Acidity (acetic acid - g / dm^3)',
+        title='All Acid Types vs Quality Grade: Zero Citric Dataset')
+```
+
+No surprising result there since we have shown previously that this dataset did not contain any wine under Grade 8, hence, the Quality Grade value only ends at 7. 
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#Combining all three type of acids in one plot facet with quality
+
+ggplot(aes(x = fixed.acidity, y=volatile.acidity), data = rw)+
+  geom_point(aes(color=citric.acid))+
+  facet_wrap(~quality, labeller = "label_both")+
+  guides(color = guide_legend(title = "Citric Acid (g / dm^3)"))+
+  labs(x='Fixed Acidity (tartaric acid - g / dm^3)',
+       y=' Volatile Acidity (acetic acid - g / dm^3)',
+       title='All Acid Types vs Quality Grade')
+```
+
+Most of the points were concentrated around Grade 5 and Grade 6, which is consistent with the Quality Histogram from the Univariates Section. All of them have similar fixed acid content. However, we can see some pretty high existence of the citric acid and the low value of volatile acid in Grade 8 compares to other Grades.
+
+# Multivariate Analysis
+
+### Talk about some of the relationships you observed in this part of the \ investigation. Were there features that strengthened each other in terms of \ looking at your feature(s) of interest?
+Once you arrange the acid variables into your wine quality layout, you can see more clearly how some of the variables influenced the quality. 
+
+### Were there any interesting or surprising interactions between features?
+Grade 8 Quality panel was missing from zero.citric dataset, and this is not surprising because all the data inside Grade 8 contains some amount of citric acid. 
+
+------
+
+# Final Plots and Summary
+
+
+### Plot One
+```{r echo=FALSE, message=FALSE, warning=FALSE, Plot_One}
+#plot the Alcolhol vs Quality to boxplot (from Bivariate Section)
+
+ggplot(rw, aes(x = quality.factor, y = alcohol)) +
+  geom_boxplot(color='red')+xlab('Quality Grade')+ylab('Alcohol (% by Volume)')+
+  labs(title='Boxplot: Alcohol vs Quality Grade in Full Dataset')
+
+```
+
+### Description One
+This boxplot really shows why Alcohol is probably the biggest contributing factor into determining the red wine quality. The higher your wine grade is, the higher your alcohol content. The mean for Grade 8 is 12.09%. We can also see an outlier that happen at 14.9% (under the Grade 5 box).
+
+### Plot Two
+```{r echo=FALSE,message=FALSE, warning=FALSE, Plot_Two}
+#plotting citric acid and Alcohol using the full dataset
+
+u21<-ggplot(aes(x = quality.factor, y=alcohol), data = rw)+
+  geom_boxplot(color='pink')+labs(title='Alcohol vs Quality in Full Dataset')+
+  xlab('Quality Grade') + ylab('Alcohol (% by Volume)')
+
+u22<-ggplot(aes(x = quality.factor, y=alcohol), data = zero.citric)+
+  geom_boxplot(color='purple')+
+  labs(title='Alcohol vs Quality in Zero Citric Dataset')+
+  xlab('Quality Grade') + ylab('Alcohol (% by Volume)') 
+
+grid.arrange(u21,u22)
+
+
+```
+
+### Description Two
+This is an interesting comparison between the Full Dataset and Zero Citric Dataset. It comes out when I found the correlation score between Alcohol and Quality was actually lower in Zero Citric Dataset compared to the Full Dataset (0.6 vs 0.4). I suspect the lower correlation might be due to the missing data from Grade 8 Quality, since Zero Citric Dataset does not contain any data from Grade 8.
+
+### Plot Three
+```{r echo=FALSE, message=FALSE, warning=FALSE, Plot_Three}
+
+#Combining all three type of acids Vs Quality
+
+ggplot(aes(x = fixed.acidity, y=volatile.acidity), data = rw)+
+  geom_point(aes(color=citric.acid))+
+  facet_wrap(~quality, labeller = "label_both")+
+  guides(color = guide_legend(title = "Citric Acid (g / dm^3)"))+
+  labs(x='Fixed Acidity (tartaric acid - g / dm^3)',
+       y=' Volatile Acidity (acetic acid - g / dm^3)',
+       title='All Acid Types vs Quality Grade')
+
+```
+
+### Description Three
+Once you divide them into 8 Quality panels, you can see more clearly how high volatile acid exist in lower quality wine. When you moved to Grade 8 and you can see how this varialble exist in smaller amount. 
+
+------
+
+# Reflection
+
+###Difficulties:
+As a non-wine drinker, this project may not look that interesting in the first glance. There's a lot of information I'm not familiar with, and I did struggle with my decision on whether to keep, or remove some of the outliers found in this dataset. At the end of the day, I decided to keep it since it gives me a better understanding on the overall picture. In future analysis, I may remove some of the outliers once I got a better understanding on the factors that influence wine quality. 
+
+### Success:
+Although Citric Acid did not strongly influence wine quality, it's still one of the item where it's 'good to have'. You can still have low quality wine even when you have Citric Acid, however, if have all the complete ingredients, the appearance of Citric Acid may push your wine quality to a grade higher. I'm glad that I went to look at the Zero Citric dataset in more details, rather than discard them as an outlier to be ignored in the analysis. 
+
+Also, from my research on EU regulation, I found that we have three datapoints that exceeded the EU's permitted level of Sulfur Dioxide (SO2). We do not know if this is simply an error, or if the wine samples came directly from the manufacturer rather than the shelf. 
+
+### Future works:
+This dataset only contains the chemical structure of red wine vs the output variable that was graded by wine experts. However, when you see any wine advertisements, they appealed to their customers with photos of their vineyard and grapes, we rarely see they advertised it with Alcohol volume for eg, (or if they do, it's part of the Government Regulation to publish the alcohol level). 
+
+So, are they some other factors that we might miss? Does your vineyard location or your species of grapes, influence your wine quality? We might do further analysis to confirm if this is the correct hypothesis. 
